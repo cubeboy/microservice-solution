@@ -17,7 +17,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 class RecommendationServiceApplicationTests {
 	@Autowired
 	private WebTestClient client;
-	
+
 	@Test
 	public void getRecommendationsByProductId() {
 		int productId = 1;
@@ -49,7 +49,7 @@ class RecommendationServiceApplicationTests {
 	@Test
 	public void getRecommendationsNotFound() {
 
-		int productIdNotFound = 113;
+		int productIdNotFound = 13;
 
 		client.get()
 			.uri("/recommendation?productId=" + productIdNotFound)
