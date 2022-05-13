@@ -21,7 +21,7 @@ public class RecommendationServiceImpl implements RecommendationService {
   public List<Recommendation> getRecommendations(int productId) {
     if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
 
-      if (productId == 113) {
+      if (productId == 13) {
         log.debug("No recommendations found for productId: {}", productId);
         return  new ArrayList<>();
       }

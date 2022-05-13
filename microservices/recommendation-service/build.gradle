@@ -13,6 +13,14 @@ repositories {
 	mavenCentral()
 }
 
+bootJar {
+	enabled = true
+}
+
+jar {
+	enabled = false
+}
+
 dependencies {
 	implementation project(':api-lib')
 	implementation project(':util-lib')

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import se.magnus.api.core.product.Product;
 import se.magnus.api.core.product.ProductService;
@@ -40,17 +39,17 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   @Autowired
   public ProductCompositeIntegration(
     RestTemplate restTemplate,
-        ObjectMapper mapper,
+    ObjectMapper mapper,
 
-        @Value("${app.product-service.host}") String productServiceHost,
-        @Value("${app.product-service.port}") int    productServicePort,
+    @Value("${app.product-service.host}") String productServiceHost,
+    @Value("${app.product-service.port}") int    productServicePort,
 
-        @Value("${app.recommendation-service.host}") String recommendationServiceHost,
-        @Value("${app.recommendation-service.port}") int    recommendationServicePort,
+    @Value("${app.recommendation-service.host}") String recommendationServiceHost,
+    @Value("${app.recommendation-service.port}") int    recommendationServicePort,
 
-        @Value("${app.review-service.host}") String reviewServiceHost,
-        @Value("${app.review-service.port}") int    reviewServicePort
-  ) {
+    @Value("${app.review-service.host}") String reviewServiceHost,
+    @Value("${app.review-service.port}") int    reviewServicePort) {
+
     this.restTemplate = restTemplate;
     this.mapper = mapper;
 
@@ -104,7 +103,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
   @Override
   public Product getProduct(int productId) {
-    
+
     try {
       String url = productServiceUrl + productId;
       log.debug("Will call getProduct API on URL: {}", url);
@@ -130,5 +129,5 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
       }
     }
   }
-  
+
 }
