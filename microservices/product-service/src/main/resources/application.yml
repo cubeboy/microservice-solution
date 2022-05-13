@@ -5,3 +5,7 @@ logging:
   level:
     root: INFO
     se.magnus: DEBUG
+
+---
+spring.profile: docker
+server.port: 8080
