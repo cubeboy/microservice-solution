@@ -22,14 +22,19 @@ jar {
 }
 
 dependencies {
+  compileOnly 'org.projectlombok:lombok'
+
+	annotationProcessor 'org.projectlombok:lombok'
+
 	implementation project(':api-lib')
 	implementation project(':util-lib')
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	compileOnly 'org.projectlombok:lombok'
+  implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
-	annotationProcessor 'org.projectlombok:lombok'
+  testImplementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo'
 }
 
 tasks.named('test') {
