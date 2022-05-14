@@ -49,7 +49,7 @@ class RecommendationServiceApplicationTests {
 	@Test
 	public void getRecommendationsNotFound() {
 
-		int productIdNotFound = 13;
+		int productIdNotFound = 113;
 
 		client.get()
 			.uri("/recommendation?productId=" + productIdNotFound)
