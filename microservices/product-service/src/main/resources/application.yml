@@ -18,5 +18,5 @@ logging:
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
 
 ---
-spring.profile: docker
+spring.profiles: docker
 server.port: 8080
