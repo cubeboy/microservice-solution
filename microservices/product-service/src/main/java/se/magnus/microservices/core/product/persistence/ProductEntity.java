@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import se.magnus.api.core.product.Product;
 
 @EqualsAndHashCode
 @Setter
@@ -33,4 +34,18 @@ public class ProductEntity {
   private String name;
   private int weight;
 
+  public ProductEntity(Product product) {
+    this.productId = product.getProductId();
+    this.name = product.getName();
+    this.weight = product.getWeight();
+  }
+
+  public Product toProduct(String serviceAddress) {
+    return Product.builder()
+      .productId(this.productId)
+      .name(this.name)
+      .weight(this.weight)
+      .serviceAddress(serviceAddress)
+      .build();
+  }
 }
