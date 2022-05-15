@@ -142,4 +142,16 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
   }
 
+  @Override
+  public Recommendation createRecommendation(Recommendation body) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void deleteRecommendations(int productId) {
+    // TODO Auto-generated method stub
+
+  }
+
 }
