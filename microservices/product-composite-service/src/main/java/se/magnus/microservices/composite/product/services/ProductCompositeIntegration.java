@@ -154,4 +154,16 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
   }
 
+  @Override
+  public Review createReview(Review body) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void deleteReviews(int productId) {
+    // TODO Auto-generated method stub
+    
+  }
+
 }

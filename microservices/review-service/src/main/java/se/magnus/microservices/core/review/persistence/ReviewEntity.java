@@ -13,6 +13,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import se.magnus.api.core.review.Review;
 
 @EqualsAndHashCode
 @Setter
@@ -39,4 +40,20 @@ public class ReviewEntity {
   @EqualsAndHashCode.Exclude
   private String content;
 
+  public ReviewEntity(Review review) {
+    this.productId = review.getProductId();
+    this.reviewId = review.getReviewId();
+    this.author = review.getAuthor();
+    this.subject = review.getSubject();
+    this.content = review.getContent();
+  }
+
+  public Review toReview(String serviceAddress) {
+    return Review.builder()
+      .productId(this.productId)
+      .reviewId(this.reviewId)
+      .author(this.author)
+      .subject(this.subject)
+      .content(this.content).build();
+  }
 }
