@@ -80,6 +80,18 @@ logging:
     root: INFO
     se.magnus: DEBUG
 
+spring:
+  application:
+    name: product-composite-service
+management:
+  endpoints:  
+    web:
+      exposure:
+        include: "prometheus"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
 ---
 spring.profiles: docker
 

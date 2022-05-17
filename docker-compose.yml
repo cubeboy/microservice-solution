@@ -59,3 +59,7 @@ services:
       timeout: 5s
       retries: 10
       
+networks:
+  default:
+    external:
+      name: microservice_net

@@ -17,7 +17,7 @@ import se.magnus.util.http.ServiceUtil;
 @RequiredArgsConstructor
 @RestController
 public class ProductServiceImpl implements ProductService {
-  private final ServiceUtil serviceUtil;
+private final ServiceUtil serviceUtil;
   private final ProductRepository repository;
 
   @Override

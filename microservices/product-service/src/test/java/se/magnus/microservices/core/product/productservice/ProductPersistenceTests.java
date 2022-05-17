@@ -23,8 +23,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import se.magnus.microservices.core.product.persistence.ProductEntity;
 import se.magnus.microservices.core.product.persistence.ProductRepository;
 
-@ExtendWith(SpringExtension.class)
 @DataMongoTest
+@ExtendWith(SpringExtension.class)
 public class ProductPersistenceTests {
 
   @Autowired
