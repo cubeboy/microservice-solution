@@ -14,6 +14,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 import se.magnus.api.core.product.Product;
 import se.magnus.api.core.product.ProductService;
 import se.magnus.api.core.recommendation.Recommendation;
@@ -94,7 +95,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   }
 
   @Override
-  public Product getProduct(int productId) {
+  public Mono<Product> getProduct(int productId) {
 
     try {
       String url = productServiceUrl + productId;
@@ -103,7 +104,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
       Product product = restTemplate.getForObject(url, Product.class);
       log.debug("Found a product with id: {}", product.getProductId());
 
-      return product;
+      return null;
 
     } catch (HttpClientErrorException ex) {
       switch (ex.getStatusCode()) {
