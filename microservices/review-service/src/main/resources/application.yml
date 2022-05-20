@@ -5,10 +5,14 @@ server.error.include-message: always
 
 spring.jpa.hibernate.ddl-auto: update
 
-spring.datasource:
-  url: jdbc:mysql://localhost/review-db
-  username: user
-  password: pwd
+spring:
+  application:
+    name: review-service
+
+  datasource:
+    url: jdbc:mysql://localhost/review-db
+    username: user
+    password: pwd
 
 spring.datasource.hikari.initializationFailTimeout: 60000
 
@@ -19,10 +23,20 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
+management:
+  endpoints:  
+    web:
+      exposure:
+        include: "prometheus"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
 ---
 spring.profiles: docker
 
-spring.datasource:
-  url: jdbc:mysql://mysql/review-db
+spring:
+  datasource:
+    url: jdbc:mysql://mysql/review-db
   
 server.port: 8080
