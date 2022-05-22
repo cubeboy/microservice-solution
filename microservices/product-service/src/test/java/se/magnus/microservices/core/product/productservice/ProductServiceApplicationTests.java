@@ -8,8 +8,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.reactive.server.WebTestClient.BodyContentSpec;
 
+import lombok.extern.slf4j.Slf4j;
 import se.magnus.api.core.product.Product;
+import se.magnus.api.core.product.ProductServiceUri;
 import se.magnus.microservices.core.product.persistence.ProductRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,6 +23,7 @@ import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static reactor.core.publisher.Mono.just;
 
+@Slf4j
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment=RANDOM_PORT, properties={"spring.data.mongodb.port: 0"})
 class ProductServiceApplicationTests {
@@ -38,9 +42,13 @@ class ProductServiceApplicationTests {
 	public void getProductById() {
 		int productId = 1;
 
-		postAndVerifyProduct(productId, OK);
+    assertNull(repository.findByProductId(productId).block());
+		assertEquals(0, (long)repository.count().block());
 
-		//assertTrue(repository.findByProductId(productId).isPresent());
+		postAndVerifyProduct(productId, OK).jsonPath("$.productId").isEqualTo(productId);
+
+		assertNotNull(repository.findByProductId(productId).block());
+		assertEquals(1, (long)repository.count().block());
 
 		getAndVerifyProduct(productId, OK)
       .jsonPath("$.productId").isEqualTo(productId);
@@ -51,21 +59,25 @@ class ProductServiceApplicationTests {
 
 		int productId = 1;
 
-		postAndVerifyProduct(productId, OK);
-		//assertTrue(repository.findByProductId(productId).isPresent());
+		postAndVerifyProduct(productId, OK).jsonPath("$.productId").isEqualTo(productId);
+		assertNotNull(repository.findByProductId(productId).block());
 
 		deleteAndVerifyProduct(productId, OK);
-		//assertFalse(repository.findByProductId(productId).isPresent());
+		assertNull(repository.findByProductId(productId).block());
 
-		deleteAndVerifyProduct(productId, OK);
 	}
 
 	@Test
 	public void getProductInvalidParameterString() {
-
-		getAndVerifyProduct("/no-integer", BAD_REQUEST)
-      .jsonPath("$.path").isEqualTo("/product/no-integer")
-      .jsonPath("$.message").isEqualTo("Type mismatch.");
+      client.get()
+        .uri(ProductServiceUri.product + "/" + "no-integer")
+        .accept(APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isEqualTo(BAD_REQUEST)
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody()
+        .jsonPath("$.path").isEqualTo("/product/no-integer")
+        .jsonPath("$.message").isEqualTo("Type mismatch.");
 	}
 
 	@Test
@@ -86,13 +98,9 @@ class ProductServiceApplicationTests {
             .jsonPath("$.message").isEqualTo("Invalid productId: " + productIdInvalid);
 	}
 
-  private WebTestClient.BodyContentSpec getAndVerifyProduct(int productId, HttpStatus expectedStatus) {
-		return getAndVerifyProduct("/" + productId, expectedStatus);
-	}
-
-	private WebTestClient.BodyContentSpec getAndVerifyProduct(String productIdPath, HttpStatus expectedStatus) {
+	private WebTestClient.BodyContentSpec getAndVerifyProduct(int productId, HttpStatus expectedStatus) {
 		return client.get()
-			.uri("/product" + productIdPath)
+			.uri(ProductServiceUri.product + "/" + productId)
 			.accept(APPLICATION_JSON)
 			.exchange()
 			.expectStatus().isEqualTo(expectedStatus)
@@ -103,7 +111,7 @@ class ProductServiceApplicationTests {
 	private WebTestClient.BodyContentSpec postAndVerifyProduct(int productId, HttpStatus expectedStatus) {
 		Product product = new Product(productId, "Name " + productId, productId, "SA");
 		return client.post()
-			.uri("/product")
+			.uri(ProductServiceUri.product.toString())
 			.body(just(product), Product.class)
 			.accept(APPLICATION_JSON)
 			.exchange()
@@ -114,7 +122,7 @@ class ProductServiceApplicationTests {
 
 	private WebTestClient.BodyContentSpec deleteAndVerifyProduct(int productId, HttpStatus expectedStatus) {
 		return client.delete()
-			.uri("/product/" + productId)
+      .uri(ProductServiceUri.product + "/" + productId)
 			.accept(APPLICATION_JSON)
 			.exchange()
 			.expectStatus().isEqualTo(expectedStatus)
