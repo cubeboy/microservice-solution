@@ -1,6 +1,7 @@
 package se.magnus.microservices.core.product.services;
 
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -27,7 +28,16 @@ public class ProductHandler {
 
   public Mono<ServerResponse> getProduct(ServerRequest request) throws RuntimeException {
     String paramProductId = request.pathVariable("productId");
-    int productId = Integer.parseInt(paramProductId);
+    int productId = 0;
+    try {
+      productId = Integer.parseInt(paramProductId);
+    } catch(Exception ex) {
+      ProductServiceError error = new ProductServiceError(
+        request.uri().getPath().toString()
+        , "Type mismatch.");
+      return ServerResponse.badRequest().contentType(MediaType.APPLICATION_JSON).bodyValue(error);
+    }
+
     if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
 
     Mono<Product> product = repository.findByProductId(productId)
@@ -56,7 +66,14 @@ public class ProductHandler {
 
   public Mono<ServerResponse> deleteProduct(ServerRequest request) {
     String paramProductId = request.pathVariable("productId");
-    int productId = Integer.parseInt(paramProductId);
+    int productId = 0;
+    try {
+      productId = Integer.parseInt(paramProductId);
+    } catch(Exception ex) {
+      ProductServiceError error = new ProductServiceError(request.path(), "Type mismatch.");
+      return ServerResponse.badRequest().contentType(MediaType.APPLICATION_JSON).bodyValue(error);
+    }
+
     if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
 
     log.debug("deleteProduct: tries to delete an entity with productId: {}", productId);
@@ -68,7 +85,7 @@ public class ProductHandler {
         return e;
       })
       .flatMap( e -> {
-        return ServerResponse.ok().bodyValue("{}");
+        return ServerResponse.ok().build();
       });
   }
 }
