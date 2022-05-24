@@ -14,6 +14,7 @@ import se.magnus.microservices.core.product.persistence.ProductEntity;
 import se.magnus.microservices.core.product.persistence.ProductRepository;
 import se.magnus.util.exceptions.InvalidInputException;
 import se.magnus.util.exceptions.NotFoundException;
+import se.magnus.util.http.GlobalReactiveExceptionHandler;
 import se.magnus.util.http.HttpErrorInfo;
 import se.magnus.util.http.ServiceUtil;
 
@@ -41,33 +42,15 @@ public class ProductHandler {
             return ServerResponse.ok().body(Mono.just(resBody), Product.class);
           })
           .onErrorResume(
-        NotFoundException.class
-            , e -> {
-              HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.NOT_FOUND, request.uri().getPath(), e.getMessage());
-              return ServerResponse.status(HttpStatus.NOT_FOUND).body(Mono.just(eInfo), HttpErrorInfo.class);
-          });
+        RuntimeException.class
+            , e -> GlobalReactiveExceptionHandler.monoException(request, e));
       })
       .onErrorResume(
-        NumberFormatException.class
-        , e -> {
-          HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.BAD_REQUEST, request.uri().getPath(), "Type mismatch.");
-          return ServerResponse.status(HttpStatus.BAD_REQUEST).body(Mono.just(eInfo), HttpErrorInfo.class);
-      })
-      .onErrorResume(
-        NotFoundException.class
-        , e -> {
-          HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.NOT_FOUND, request.uri().getPath(), e.getMessage());
-          return ServerResponse.status(HttpStatus.NOT_FOUND).body(Mono.just(eInfo), HttpErrorInfo.class);
-      })
-      .onErrorResume(
-        InvalidInputException.class
-        , e -> {
-          HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.UNPROCESSABLE_ENTITY, request.uri().getPath(), e.getMessage());
-          return ServerResponse.status(HttpStatus.UNPROCESSABLE_ENTITY).body(Mono.just(eInfo), HttpErrorInfo.class);
-      });
+    RuntimeException.class
+        , e -> GlobalReactiveExceptionHandler.monoException(request, e));
   }
 
-  public Mono<ServerResponse> createProduct(ServerRequest request) throws RuntimeException {
+  public Mono<ServerResponse> createProduct(ServerRequest request) {
     Mono<Product> product = request.bodyToMono(Product.class);
 
     return product
@@ -80,7 +63,10 @@ public class ProductHandler {
       })
       .flatMap(body -> {
         return ServerResponse.ok().body(Mono.just(body), Product.class);
-      });
+      })
+      .onErrorResume(
+        RuntimeException.class
+        , e -> GlobalReactiveExceptionHandler.monoException(request, e));
   }
 
   public Mono<ServerResponse> deleteProduct(ServerRequest request) {
@@ -98,29 +84,11 @@ public class ProductHandler {
             return ServerResponse.ok().build();
           })
           .onErrorResume(
-        NotFoundException.class
-              , e -> {
-                HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.NOT_FOUND, request.uri().getPath(), e.getMessage());
-                return ServerResponse.status(HttpStatus.NOT_FOUND).body(Mono.just(eInfo), HttpErrorInfo.class);
-          });
+        RuntimeException.class
+            , e -> GlobalReactiveExceptionHandler.monoException(request, e));
       })
       .onErrorResume(
-        NumberFormatException.class
-        , e -> {
-          HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.BAD_REQUEST, request.uri().getPath(), "Type mismatch.");
-          return ServerResponse.status(HttpStatus.BAD_REQUEST).body(Mono.just(eInfo), HttpErrorInfo.class);
-      })
-      .onErrorResume(
-        NotFoundException.class
-        , e -> {
-          HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.NOT_FOUND, request.uri().getPath(), e.getMessage());
-          return ServerResponse.status(HttpStatus.NOT_FOUND).body(Mono.just(eInfo), HttpErrorInfo.class);
-      })
-      .onErrorResume(
-        InvalidInputException.class
-        , e -> {
-          HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.UNPROCESSABLE_ENTITY, request.uri().getPath(), e.getMessage());
-          return ServerResponse.status(HttpStatus.UNPROCESSABLE_ENTITY).body(Mono.just(eInfo), HttpErrorInfo.class);
-      });
+    RuntimeException.class
+        , e -> GlobalReactiveExceptionHandler.monoException(request, e));
   }
 }
