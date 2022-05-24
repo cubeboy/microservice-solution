@@ -19,9 +19,9 @@ public class ProductServiceConfgurer {
   @Bean
   public RouterFunction<ServerResponse> route(ProductHandler handler) {
     RouterFunction<ServerResponse> route = RouterFunctions.route()
-      .GET(ProductServiceUri.product.toString() + "/{productId}", accept(APPLICATION_JSON), handler::getProduct)
-      .POST(ProductServiceUri.product.toString(), accept(APPLICATION_JSON), handler::createProduct)
-      .DELETE(ProductServiceUri.product.toString() + "/{productId}", accept(APPLICATION_JSON), handler::deleteProduct)
+      .GET(ProductServiceUri.PRODUCT + "/{productId}", accept(APPLICATION_JSON), handler::getProduct)
+      .POST(ProductServiceUri.PRODUCT, accept(APPLICATION_JSON), handler::createProduct)
+      .DELETE(ProductServiceUri.PRODUCT + "/{productId}", accept(APPLICATION_JSON), handler::deleteProduct)
       .build();
 
     return route;

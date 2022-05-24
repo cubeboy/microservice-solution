@@ -1,6 +1,5 @@
 package se.magnus.microservices.core.product.services;
 
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -15,6 +14,7 @@ import se.magnus.microservices.core.product.persistence.ProductEntity;
 import se.magnus.microservices.core.product.persistence.ProductRepository;
 import se.magnus.util.exceptions.InvalidInputException;
 import se.magnus.util.exceptions.NotFoundException;
+import se.magnus.util.http.HttpErrorInfo;
 import se.magnus.util.http.ServiceUtil;
 
 import static reactor.core.publisher.Mono.error;
@@ -27,25 +27,44 @@ public class ProductHandler {
   private final ServiceUtil serviceUtil;
 
   public Mono<ServerResponse> getProduct(ServerRequest request) throws RuntimeException {
-    String paramProductId = request.pathVariable("productId");
-    int productId = 0;
-    try {
-      productId = Integer.parseInt(paramProductId);
-    } catch(Exception ex) {
-      ProductServiceError error = new ProductServiceError(
-        request.uri().getPath().toString()
-        , "Type mismatch.");
-      return ServerResponse.badRequest().contentType(MediaType.APPLICATION_JSON).bodyValue(error);
-    }
+    return Mono.just(Product.builder().build())
+      .flatMap( p -> {
+        String paramProductId = request.pathVariable("productId");
+        int productId = Integer.parseInt(paramProductId);
+        log.info("getProduct :: productId = " + productId);
+        if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
 
-    if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
-
-    Mono<Product> product = repository.findByProductId(productId)
-        .switchIfEmpty(error(new NotFoundException("No product found for productId: " + productId)))
-        .log()
-        .map(e -> e.toProduct(serviceUtil.getServiceAddress()));
-
-    return ServerResponse.ok().body(product, Product.class);
+        return repository.findByProductId(productId)
+          .switchIfEmpty(error(new NotFoundException("No product found for productId: " + productId)))
+          .flatMap(o -> {
+            Product resBody = o.toProduct(serviceUtil.getServiceAddress());
+            return ServerResponse.ok().body(Mono.just(resBody), Product.class);
+          })
+          .onErrorResume(
+        NotFoundException.class
+            , e -> {
+              HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.NOT_FOUND, request.uri().getPath(), e.getMessage());
+              return ServerResponse.status(HttpStatus.NOT_FOUND).body(Mono.just(eInfo), HttpErrorInfo.class);
+          });
+      })
+      .onErrorResume(
+        NumberFormatException.class
+        , e -> {
+          HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.BAD_REQUEST, request.uri().getPath(), "Type mismatch.");
+          return ServerResponse.status(HttpStatus.BAD_REQUEST).body(Mono.just(eInfo), HttpErrorInfo.class);
+      })
+      .onErrorResume(
+        NotFoundException.class
+        , e -> {
+          HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.NOT_FOUND, request.uri().getPath(), e.getMessage());
+          return ServerResponse.status(HttpStatus.NOT_FOUND).body(Mono.just(eInfo), HttpErrorInfo.class);
+      })
+      .onErrorResume(
+        InvalidInputException.class
+        , e -> {
+          HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.UNPROCESSABLE_ENTITY, request.uri().getPath(), e.getMessage());
+          return ServerResponse.status(HttpStatus.UNPROCESSABLE_ENTITY).body(Mono.just(eInfo), HttpErrorInfo.class);
+      });
   }
 
   public Mono<ServerResponse> createProduct(ServerRequest request) throws RuntimeException {
@@ -65,27 +84,43 @@ public class ProductHandler {
   }
 
   public Mono<ServerResponse> deleteProduct(ServerRequest request) {
-    String paramProductId = request.pathVariable("productId");
-    int productId = 0;
-    try {
-      productId = Integer.parseInt(paramProductId);
-    } catch(Exception ex) {
-      ProductServiceError error = new ProductServiceError(request.path(), "Type mismatch.");
-      return ServerResponse.badRequest().contentType(MediaType.APPLICATION_JSON).bodyValue(error);
-    }
+    return Mono.just(Product.builder().build())
+      .flatMap( p -> {
+        String paramProductId = request.pathVariable("productId");
+        int productId = Integer.parseInt(paramProductId);
+        log.info("getProduct :: productId = " + productId);
+        if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
 
-    if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
-
-    log.debug("deleteProduct: tries to delete an entity with productId: {}", productId);
-    return  repository.findByProductId(productId)
-      .map( e -> {
-        repository.delete(e).subscribe();
-        log.info("==============================================================");
-        log.info(e.toString());
-        return e;
+        return repository.findByProductId(productId)
+          .switchIfEmpty(error(new NotFoundException("No product found for productId: " + productId)))
+          .flatMap(e -> {
+            repository.delete(e).subscribe();
+            return ServerResponse.ok().build();
+          })
+          .onErrorResume(
+        NotFoundException.class
+              , e -> {
+                HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.NOT_FOUND, request.uri().getPath(), e.getMessage());
+                return ServerResponse.status(HttpStatus.NOT_FOUND).body(Mono.just(eInfo), HttpErrorInfo.class);
+          });
       })
-      .flatMap( e -> {
-        return ServerResponse.ok().build();
+      .onErrorResume(
+        NumberFormatException.class
+        , e -> {
+          HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.BAD_REQUEST, request.uri().getPath(), "Type mismatch.");
+          return ServerResponse.status(HttpStatus.BAD_REQUEST).body(Mono.just(eInfo), HttpErrorInfo.class);
+      })
+      .onErrorResume(
+        NotFoundException.class
+        , e -> {
+          HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.NOT_FOUND, request.uri().getPath(), e.getMessage());
+          return ServerResponse.status(HttpStatus.NOT_FOUND).body(Mono.just(eInfo), HttpErrorInfo.class);
+      })
+      .onErrorResume(
+        InvalidInputException.class
+        , e -> {
+          HttpErrorInfo eInfo = new HttpErrorInfo(HttpStatus.UNPROCESSABLE_ENTITY, request.uri().getPath(), e.getMessage());
+          return ServerResponse.status(HttpStatus.UNPROCESSABLE_ENTITY).body(Mono.just(eInfo), HttpErrorInfo.class);
       });
   }
 }

@@ -8,9 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.reactive.server.WebTestClient.BodyContentSpec;
 
-import lombok.extern.slf4j.Slf4j;
+import reactor.test.StepVerifier;
 import se.magnus.api.core.product.Product;
 import se.magnus.api.core.product.ProductServiceUri;
 import se.magnus.microservices.core.product.persistence.ProductRepository;
@@ -23,7 +22,6 @@ import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static reactor.core.publisher.Mono.just;
 
-@Slf4j
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment=RANDOM_PORT, properties={"spring.data.mongodb.port: 0"})
 class ProductServiceApplicationTests {
@@ -57,26 +55,27 @@ class ProductServiceApplicationTests {
   @Test
 	public void deleteProduct() {
 
-		int productId = 1;
+		int productId = 5;
 
 		postAndVerifyProduct(productId, OK).jsonPath("$.productId").isEqualTo(productId);
-		assertNotNull(repository.findByProductId(productId).block());
+		StepVerifier.create(repository.findByProductId(productId))
+      .expectNextMatches(entity -> entity.getProductId() == productId);
 
 		deleteAndVerifyProduct(productId, OK);
-		assertNull(repository.findByProductId(productId).block());
-
+    StepVerifier.create(repository.findByProductId(productId))
+      .expectNextMatches(entity -> entity == null);
 	}
 
 	@Test
 	public void getProductInvalidParameterString() {
       client.get()
-        .uri(ProductServiceUri.product + "/" + "no-integer")
+        .uri(ProductServiceUri.PRODUCT + "/" + "no-integer")
         .accept(APPLICATION_JSON)
         .exchange()
         .expectStatus().isEqualTo(BAD_REQUEST)
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody()
-        .jsonPath("$.path").isEqualTo("/ProductServiceUri.product(uri=/product)/no-integer")
+        .jsonPath("$.path").isEqualTo("/product/no-integer")
         .jsonPath("$.message").isEqualTo("Type mismatch.");
 	}
 
@@ -89,6 +88,7 @@ class ProductServiceApplicationTests {
       .jsonPath("$.message").isEqualTo("No product found for productId: " + productIdNotFound);
 	}
 
+
 	@Test
 	public void getProductInvalidParameterNegativeValue() {
 
@@ -100,7 +100,7 @@ class ProductServiceApplicationTests {
 
 	private WebTestClient.BodyContentSpec getAndVerifyProduct(int productId, HttpStatus expectedStatus) {
 		return client.get()
-			.uri(ProductServiceUri.product + "/" + productId)
+			.uri(ProductServiceUri.PRODUCT + "/" + productId)
 			.accept(APPLICATION_JSON)
 			.exchange()
 			.expectStatus().isEqualTo(expectedStatus)
@@ -111,7 +111,7 @@ class ProductServiceApplicationTests {
 	private WebTestClient.BodyContentSpec postAndVerifyProduct(int productId, HttpStatus expectedStatus) {
 		Product product = new Product(productId, "Name " + productId, productId, "SA");
 		return client.post()
-			.uri(ProductServiceUri.product.toString())
+			.uri(ProductServiceUri.PRODUCT)
 			.body(just(product), Product.class)
 			.accept(APPLICATION_JSON)
 			.exchange()
@@ -122,7 +122,7 @@ class ProductServiceApplicationTests {
 
 	private WebTestClient.BodyContentSpec deleteAndVerifyProduct(int productId, HttpStatus expectedStatus) {
 		return client.delete()
-      .uri(ProductServiceUri.product + "/" + productId)
+      .uri(ProductServiceUri.PRODUCT + "/" + productId)
 			.accept(APPLICATION_JSON)
 			.exchange()
 			.expectStatus().isEqualTo(expectedStatus)
