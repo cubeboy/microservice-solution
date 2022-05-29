@@ -13,6 +13,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import reactor.test.StepVerifier;
 import se.magnus.microservices.core.recommendation.persistence.RecommendationEntity;
 import se.magnus.microservices.core.recommendation.persistence.RecommendationRepository;
 
@@ -34,9 +35,11 @@ public class RecommendationPersistenceTest {
       .author("a")
       .rating(3)
       .content("c").build();
-    savedEntity = repository.save(entity);
 
-    assertEquals(entity, savedEntity);
+    StepVerifier.create(repository.save(entity))
+      .expectNextMatches(t -> t.equals(entity))
+      .verifyComplete();
+    savedEntity = entity;
   }
 
   @Test
@@ -47,12 +50,18 @@ public class RecommendationPersistenceTest {
       .author("a")
       .rating(3)
       .content("c").build();
-    repository.save(newEntity);
+    StepVerifier.create(repository.save(newEntity))
+      .expectNextMatches(t -> t.equals(newEntity))
+      .verifyComplete();
 
-    RecommendationEntity foundEntity = repository.findById(newEntity.getId()).get();
-    assertEquals(newEntity, foundEntity);
 
-    assertEquals(2, repository.count());
+    StepVerifier.create(repository.findById(newEntity.getId()))
+      .expectNextMatches(t -> t.equals(newEntity))
+      .verifyComplete();
+
+    StepVerifier.create(repository.count())
+    .expectNextMatches(t -> t.equals(2L))
+    .verifyComplete();
   }
 
   @Test
@@ -67,9 +76,9 @@ public class RecommendationPersistenceTest {
       .author("a2")
       .rating(savedEntity.getRating())
       .content(savedEntity.getAuthor()).build();
-      savedEntity = repository.save(updateEntity);
+      savedEntity = repository.save(updateEntity).block();
 
-      RecommendationEntity foundEntity = repository.findById(updateEntity.getId()).get();
+      RecommendationEntity foundEntity = repository.findById(updateEntity.getId()).block();
       assertEquals(foundEntity, savedEntity);
       assertEquals(1, (long)foundEntity.getVersion());
       assertEquals("a2", foundEntity.getAuthor());
@@ -78,12 +87,12 @@ public class RecommendationPersistenceTest {
     @Test
    	public void delete() {
         repository.delete(savedEntity);
-        assertFalse(repository.existsById(savedEntity.getId()));
+        assertFalse(repository.existsById(savedEntity.getId()).block());
     }
 
     @Test
    	public void getByProductId() {
-        List<RecommendationEntity> entityList = repository.findByProductId(savedEntity.getProductId());
+        List<RecommendationEntity> entityList = repository.findByProductId(savedEntity.getProductId()).collectList().block();
 
         assertEquals(1, entityList.size());
         assertEquals(savedEntity, entityList.get(0));
@@ -107,8 +116,8 @@ public class RecommendationPersistenceTest {
    	public void optimisticLockError() {
 
         // Store the saved entity in two separate entity objects
-        RecommendationEntity entity1 = repository.findById(savedEntity.getId()).get();
-        RecommendationEntity entity2 = repository.findById(savedEntity.getId()).get();
+        RecommendationEntity entity1 = repository.findById(savedEntity.getId()).block();
+        RecommendationEntity entity2 = repository.findById(savedEntity.getId()).block();
 
         // Update the entity using the first entity object
         entity1.setAuthor("a1");
@@ -122,7 +131,7 @@ public class RecommendationPersistenceTest {
         });
 
         // Get the updated entity from the database and verify its new sate
-        RecommendationEntity updatedEntity = repository.findById(savedEntity.getId()).get();
+        RecommendationEntity updatedEntity = repository.findById(savedEntity.getId()).block();
         assertEquals(1, (int)updatedEntity.getVersion());
         assertEquals("a1", updatedEntity.getAuthor());
     }

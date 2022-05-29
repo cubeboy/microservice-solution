@@ -26,7 +26,8 @@ public class RecommendationServiceImpl implements RecommendationService {
   public Recommendation createRecommendation(Recommendation body) {
     try {
       RecommendationEntity entity = new RecommendationEntity(body);
-      RecommendationEntity newEntity = repository.save(entity);
+      //RecommendationEntity newEntity = repository.save(entity);
+      RecommendationEntity newEntity = null;
 
       log.debug("createRecommendation: created a recommendation entity: {}/{}", body.getProductId(), body.getRecommendationId());
       return newEntity.toRecommendation(serviceUtil.getServiceAddress());
@@ -41,7 +42,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 
       if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
 
-      List<RecommendationEntity> entityList = repository.findByProductId(productId);
+      //List<RecommendationEntity> entityList = repository.findByProductId(productId);
+      List<RecommendationEntity> entityList = null;
       List<Recommendation> list = entityList.stream()
         .map( entity -> entity.toRecommendation(serviceUtil.getServiceAddress()))
         .collect(Collectors.toList());
