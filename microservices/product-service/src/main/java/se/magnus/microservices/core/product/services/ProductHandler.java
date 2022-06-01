@@ -1,7 +1,5 @@
 package se.magnus.microservices.core.product.services;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -15,7 +13,6 @@ import se.magnus.microservices.core.product.persistence.ProductRepository;
 import se.magnus.util.exceptions.InvalidInputException;
 import se.magnus.util.exceptions.NotFoundException;
 import se.magnus.util.http.GlobalReactiveExceptionHandler;
-import se.magnus.util.http.HttpErrorInfo;
 import se.magnus.util.http.ServiceUtil;
 
 import static reactor.core.publisher.Mono.error;
@@ -43,11 +40,11 @@ public class ProductHandler {
           })
           .onErrorResume(
         RuntimeException.class
-            , e -> GlobalReactiveExceptionHandler.monoException(request, e));
+            , e -> error(e));
       })
       .onErrorResume(
     RuntimeException.class
-        , e -> GlobalReactiveExceptionHandler.monoException(request, e));
+        , e -> error(e));
   }
 
   public Mono<ServerResponse> createProduct(ServerRequest request) {
@@ -66,7 +63,7 @@ public class ProductHandler {
       })
       .onErrorResume(
         RuntimeException.class
-        , e -> GlobalReactiveExceptionHandler.monoException(request, e));
+        , e -> error(e));
   }
 
   public Mono<ServerResponse> deleteProduct(ServerRequest request) {

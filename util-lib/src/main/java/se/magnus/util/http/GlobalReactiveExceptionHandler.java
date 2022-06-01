@@ -22,6 +22,6 @@ public class GlobalReactiveExceptionHandler {
     else
       eInfo = new HttpErrorInfo(HttpStatus.BAD_REQUEST, request.uri().getPath(), e.getMessage());
 
-    return ServerResponse.status(eInfo.getStatus()).body(Mono.just(eInfo), HttpErrorInfo.class);
+    return ServerResponse.status(eInfo.getHttpStatus()).body(Mono.just(eInfo), HttpErrorInfo.class);
   }
 }

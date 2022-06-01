@@ -2,8 +2,11 @@ package se.magnus.util.http;
 
 import org.springframework.http.HttpStatus;
 
+import lombok.Getter;
+
 import java.time.ZonedDateTime;
 
+@Getter
 public class HttpErrorInfo {
     private final ZonedDateTime timestamp;
     private final String path;
@@ -23,25 +26,5 @@ public class HttpErrorInfo {
         this.httpStatus = httpStatus;
         this.path = path;
         this.message = message;
-    }
-
-    public ZonedDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public int getStatus() {
-        return httpStatus.value();
-    }
-
-    public String getError() {
-        return httpStatus.getReasonPhrase();
-    }
-
-    public String getMessage() {
-        return message;
     }
 }

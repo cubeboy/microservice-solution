@@ -53,6 +53,6 @@ private final ServiceUtil serviceUtil;
   @Override
   public void deleteProduct(int productId) {
     log.debug("deleteProduct: tries to delete an entity with productId: {}", productId);
-    // repository.findByProductId(productId).ifPresent(e -> repository.delete(e));
+    //repository.findByProductId(productId).map(e -> if e != null ) .ifPresent(e -> repository.delete(e));
   }
 }

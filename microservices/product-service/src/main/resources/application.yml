@@ -1,5 +1,5 @@
 spring.config.use-legacy-processing: true
- 
+
 server.port: 7001
 server.error.include-message: always
 
@@ -9,7 +9,7 @@ spring:
 
   mongodb:
     embedded:
-      version: 3.6.5
+      version: 5.0.6
 
   data:
     mongodb:
@@ -24,7 +24,7 @@ logging:
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
 
 management:
-  endpoints:  
+  endpoints:
     web:
       exposure:
         include: "*"
