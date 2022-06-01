@@ -16,7 +16,7 @@ import se.magnus.api.core.recommendation.Recommendation;
 @EqualsAndHashCode
 @Setter
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Document(collection="recommendations")

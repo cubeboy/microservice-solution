@@ -2,8 +2,6 @@ package se.magnus.microservices.core.recommendation;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,8 +58,8 @@ public class RecommendationPersistenceTest {
       .verifyComplete();
 
     StepVerifier.create(repository.count())
-    .expectNextMatches(t -> t.equals(2L))
-    .verifyComplete();
+      .expectNextMatches(t -> t.equals(2L))
+      .verifyComplete();
   }
 
   @Test
@@ -69,33 +67,34 @@ public class RecommendationPersistenceTest {
       assertEquals(0, (long)savedEntity.getVersion());
 
       RecommendationEntity updateEntity = RecommendationEntity.builder()
-      .id(savedEntity.getId())
-      .version(savedEntity.getVersion())
-      .productId(savedEntity.getProductId())
-      .recommendationId(savedEntity.getRecommendationId())
-      .author("a2")
-      .rating(savedEntity.getRating())
-      .content(savedEntity.getAuthor()).build();
-      savedEntity = repository.save(updateEntity).block();
-
-      RecommendationEntity foundEntity = repository.findById(updateEntity.getId()).block();
-      assertEquals(foundEntity, savedEntity);
-      assertEquals(1, (long)foundEntity.getVersion());
-      assertEquals("a2", foundEntity.getAuthor());
+        .id(savedEntity.getId())
+        .version(savedEntity.getVersion())
+        .productId(savedEntity.getProductId())
+        .recommendationId(savedEntity.getRecommendationId())
+        .author("a2")
+        .rating(savedEntity.getRating())
+        .content(savedEntity.getAuthor()).build();
+      StepVerifier.create(repository.save(updateEntity))
+        .expectNextMatches(t ->
+          t.getVersion().equals(1) &&
+          "a2".equals(t.getAuthor()))
+        .verifyComplete();
     }
 
     @Test
    	public void delete() {
-        repository.delete(savedEntity);
-        assertFalse(repository.existsById(savedEntity.getId()).block());
+        repository.delete(savedEntity).subscribe();
+        StepVerifier.create(repository.existsById(savedEntity.getId()))
+          .expectNext(false)
+          .verifyComplete();
     }
 
     @Test
    	public void getByProductId() {
-        List<RecommendationEntity> entityList = repository.findByProductId(savedEntity.getProductId()).collectList().block();
-
-        assertEquals(1, entityList.size());
-        assertEquals(savedEntity, entityList.get(0));
+        StepVerifier.create(repository.findByProductId(savedEntity.getProductId()))
+          .thenRequest(1)
+          .expectNextMatches(t -> t.equals(savedEntity))
+          .verifyComplete();
     }
 
     @Test
@@ -107,32 +106,32 @@ public class RecommendationPersistenceTest {
         .author("a")
         .rating(3)
         .content("c").build();
-      assertThrows(DuplicateKeyException.class, () -> {
-        repository.save(entity);
-      });
+
+      StepVerifier.create(repository.save(entity))
+        .expectError(DuplicateKeyException.class)
+        .verify();
     }
 
     @Test
    	public void optimisticLockError() {
 
         // Store the saved entity in two separate entity objects
-        RecommendationEntity entity1 = repository.findById(savedEntity.getId()).block();
-        RecommendationEntity entity2 = repository.findById(savedEntity.getId()).block();
+        RecommendationEntity entity1 = savedEntity.toBuilder().build();
+        RecommendationEntity entity2 = savedEntity.toBuilder().build();
 
         // Update the entity using the first entity object
         entity1.setAuthor("a1");
-        repository.save(entity1);
+        StepVerifier.create(repository.save(entity1))
+          .expectNextMatches(e ->
+            "a1".equals(e.getAuthor())
+            && e.getVersion().equals(1))
+          .verifyComplete();
 
         //  Update the entity using the second entity object.
         // This should fail since the second entity now holds a old version number, i.e. a Optimistic Lock Error
-        assertThrows(OptimisticLockingFailureException.class, () -> {
-          entity2.setAuthor("a2");
-            repository.save(entity2);
-        });
-
-        // Get the updated entity from the database and verify its new sate
-        RecommendationEntity updatedEntity = repository.findById(savedEntity.getId()).block();
-        assertEquals(1, (int)updatedEntity.getVersion());
-        assertEquals("a1", updatedEntity.getAuthor());
+        entity2.setAuthor("a2");
+        StepVerifier.create(repository.save(entity2))
+          .expectError(OptimisticLockingFailureException.class)
+          .verify();
     }
 }
