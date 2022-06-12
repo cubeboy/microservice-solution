@@ -18,7 +18,7 @@ import static reactor.core.publisher.Mono.error;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
+// @Component
 public class ProductHandler {
   private final ProductRepository repository;
   private final ServiceUtil serviceUtil;

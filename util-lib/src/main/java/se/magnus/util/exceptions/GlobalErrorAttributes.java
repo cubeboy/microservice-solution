@@ -9,9 +9,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.server.ResponseStatusException;
 
+import lombok.extern.slf4j.Slf4j;
 import se.magnus.util.http.HttpErrorInfo;
 
-@Component
+@Slf4j
+//@Component
 public class GlobalErrorAttributes extends DefaultErrorAttributes {
 
   @Override
@@ -20,20 +22,15 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
     Throwable e = getError(request);
     HttpErrorInfo eInfo = null;
 
-    if(e instanceof NotFoundException)
-      eInfo = new HttpErrorInfo(HttpStatus.NOT_FOUND, request.uri().getPath(), e.getMessage());
-    else if(e instanceof NumberFormatException)
-      eInfo = new HttpErrorInfo(HttpStatus.BAD_REQUEST, request.uri().getPath(), "Type mismatch.");
-    else if(e instanceof InvalidInputException)
-      eInfo = new HttpErrorInfo(HttpStatus.UNPROCESSABLE_ENTITY, request.uri().getPath(), e.getMessage());
-    else
-      eInfo = new HttpErrorInfo(HttpStatus.BAD_REQUEST, request.uri().getPath(), e.getMessage());
+    if(e instanceof InvalidInputException) {
 
-    if(e instanceof ResponseStatusException) {
+    }else if(e instanceof ResponseStatusException) {
       ResponseStatusException ex = (ResponseStatusException)e;
       eInfo = new HttpErrorInfo(ex.getStatus(), request.uri().getPath(), ex.getReason());
+    } else {
+      eInfo = new HttpErrorInfo(HttpStatus.INTERNAL_SERVER_ERROR, request.uri().getPath(), e.getMessage());
     }
-
+    log.error("GlobalErrorAttributes :: " + e.getMessage());
     retMap.put("status", eInfo.getHttpStatus());
     retMap.put("message", eInfo.getMessage());
     retMap.put("path", eInfo.getPath());

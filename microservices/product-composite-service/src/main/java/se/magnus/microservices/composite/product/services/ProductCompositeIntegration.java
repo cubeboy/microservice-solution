@@ -124,7 +124,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   }
 
   @Override
-  public Product createProduct(Product body) {
+  public Mono<Product> createProduct(Product body) {
     try {
       String url = productServiceUrl;
       log.debug("Will post a new product to URL: {}", url);
@@ -132,7 +132,8 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
       Product product = restTemplate.postForObject(url, body, Product.class);
       log.debug("Created a product with id: {}", product.getProductId());
 
-      return product;
+      //return product;
+      return null;
 
     } catch (HttpClientErrorException ex) {
       throw handleHttpClientException(ex);

@@ -22,8 +22,8 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import se.magnus.util.exceptions.GlobalErrorAttributes;
 
-@Component
-@Order(-2)
+//@Component
+//@Order(-2)
 public class GlobalErrorWebExceptionHandler extends AbstractErrorWebExceptionHandler {
 
   public GlobalErrorWebExceptionHandler(GlobalErrorAttributes errorAttributes, Resources resources,

@@ -13,8 +13,8 @@ import se.magnus.api.core.product.ProductServiceUri;
 import static org.springframework.web.reactive.function.server.RequestPredicates.*;
 import static org.springframework.http.MediaType.*;
 
-@EnableWebFlux
-@Configuration
+// @EnableWebFlux
+// @Configuration
 public class ProductServiceConfgurer {
   @Bean
   public RouterFunction<ServerResponse> route(ProductHandler handler) {

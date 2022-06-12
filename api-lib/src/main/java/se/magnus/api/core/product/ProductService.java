@@ -13,7 +13,7 @@ public interface ProductService {
     value    = "/product",
     consumes = "application/json",
     produces = "application/json")
-  Product createProduct(@RequestBody Product body);
+  Mono<Product> createProduct(@RequestBody Product body);
 
   @GetMapping(
     value = "/product/{productId}",
