@@ -36,9 +36,15 @@ class RecommendationServiceApplicationTests {
 	public void getRecommendationsByProductId() {
 		int productId = 1;
 
-		postAndVerifyRecommendation(productId, 1, OK);
-		postAndVerifyRecommendation(productId, 2, OK);
-		postAndVerifyRecommendation(productId, 3, OK);
+    postAndVerifyRecommendation(productId, 1, OK)
+      .jsonPath("$.productId").isEqualTo(1)
+      .jsonPath("$.recommendationId").isEqualTo(1);
+		postAndVerifyRecommendation(productId, 2, OK)
+      .jsonPath("$.productId").isEqualTo(1)
+      .jsonPath("$.recommendationId").isEqualTo(2);
+		postAndVerifyRecommendation(productId, 3, OK)
+      .jsonPath("$.productId").isEqualTo(1)
+      .jsonPath("$.recommendationId").isEqualTo(3);
 
     StepVerifier.create(repository.findByProductId(productId))
       .expectNextCount(3)
@@ -69,15 +75,16 @@ class RecommendationServiceApplicationTests {
   @Test
 	public void getRecommendationsMissingParameter() {
 
-		getAndVerifyRecommendationsByProductId("/", NOT_FOUND)
-			.jsonPath("$.path").isEqualTo("/recommendation/");
+		getAndVerifyRecommendationsByProductId("", BAD_REQUEST)
+			.jsonPath("$.path").isEqualTo("/recommendation")
+      .jsonPath("$.message").isEqualTo("Required int parameter 'productId' is not present");
 	}
 
 	@Test
 	public void getRecommendationsInvalidParameter() {
 
-		getAndVerifyRecommendationsByProductId("/no-integer", BAD_REQUEST)
-			.jsonPath("$.path").isEqualTo("/recommendation/no-integer")
+		getAndVerifyRecommendationsByProductId("?productId=no-integer", BAD_REQUEST)
+			.jsonPath("$.path").isEqualTo("/recommendation")
 			.jsonPath("$.message").isEqualTo("Type mismatch.");
 	}
 
@@ -94,12 +101,12 @@ class RecommendationServiceApplicationTests {
 		int productIdInvalid = -1;
 
 		getAndVerifyRecommendationsByProductId(productIdInvalid, UNPROCESSABLE_ENTITY)
-			.jsonPath("$.path").isEqualTo("/recommendation/-1")
+			.jsonPath("$.path").isEqualTo("/recommendation")
 			.jsonPath("$.message").isEqualTo("Invalid productId: " + productIdInvalid);
 	}
 
 	private WebTestClient.BodyContentSpec getAndVerifyRecommendationsByProductId(int productId, HttpStatus expectedStatus) {
-		return getAndVerifyRecommendationsByProductId("/" + productId, expectedStatus);
+		return getAndVerifyRecommendationsByProductId("?productId=" + productId, expectedStatus);
 	}
 
 	private WebTestClient.BodyContentSpec getAndVerifyRecommendationsByProductId(String productIdQuery, HttpStatus expectedStatus) {
@@ -126,7 +133,7 @@ class RecommendationServiceApplicationTests {
 
 	private WebTestClient.BodyContentSpec deleteAndVerifyRecommendationsByProductId(int productId, HttpStatus expectedStatus) {
 		return client.delete()
-			.uri("/recommendation/" + productId)
+			.uri("/recommendation?productId=" + productId)
 			.accept(APPLICATION_JSON)
 			.exchange()
 			.expectStatus().isEqualTo(expectedStatus)

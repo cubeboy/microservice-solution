@@ -1,6 +1,6 @@
 package se.magnus.microservices.core.recommendation.services;
 
-import org.springframework.stereotype.Component;
+//import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
@@ -19,7 +19,7 @@ import static reactor.core.publisher.Mono.error;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
+//@Component
 public class RecommendationHandler {
   private final RecommendationRepository repository;
   private final ServiceUtil serviceUtil;

@@ -14,6 +14,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import se.magnus.api.core.product.Product;
 import se.magnus.api.core.product.ProductService;
@@ -78,7 +79,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   }
 
   @Override
-  public List<Recommendation> getRecommendations(int productId) {
+  public Flux<Recommendation> getRecommendations(int productId) {
     try {
       String url = recommendationServiceUrl + productId;
 
@@ -86,11 +87,13 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
       List<Recommendation> recommendations = restTemplate.exchange(url, GET, null, new ParameterizedTypeReference<List<Recommendation>>() {}).getBody();
 
       log.debug("Found {} recommendations for a product with id: {}", recommendations.size(), productId);
-      return recommendations;
+      //return recommendations;
+      return null;
 
     } catch (Exception ex) {
       log.warn("Got an exception while requesting recommendations, return zero recommendations: {}", ex.getMessage());
-      return new ArrayList<>();
+      //return new ArrayList<>();
+      return null;
     }
   }
 
@@ -153,7 +156,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   }
 
   @Override
-  public Recommendation createRecommendation(Recommendation body) {
+  public Mono<Recommendation> createRecommendation(Recommendation body) {
 
     try {
       String url = recommendationServiceUrl;
@@ -162,7 +165,8 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
       Recommendation recommendation = restTemplate.postForObject(url, body, Recommendation.class);
       log.debug("Created a recommendation with id: {}", recommendation.getProductId());
 
-      return recommendation;
+      //return recommendation;
+      return null;
 
     } catch (HttpClientErrorException ex) {
       throw handleHttpClientException(ex);

@@ -34,7 +34,7 @@ public class ProductCompositeServiceImpl implements PorductCompositeService {
       .weight(body.getWeight()).build();
     integration.createProduct(product);
 
-    
+
     if (body.getRecommendations() != null) {
       body.getRecommendations().forEach(r -> {
         integration.createRecommendation(Recommendation.builder()
@@ -68,7 +68,7 @@ public class ProductCompositeServiceImpl implements PorductCompositeService {
     Product product = null;// integration.getProduct(productId);
     if (product == null) throw new NotFoundException("No product found for productId: " + productId);
 
-    List<Recommendation> recommendations = integration.getRecommendations(productId);
+    List<Recommendation> recommendations = null; //integration.getRecommendations(productId);
 
     List<Review> reviews = integration.getReviews(productId);
 
@@ -96,7 +96,7 @@ public class ProductCompositeServiceImpl implements PorductCompositeService {
     , List<Recommendation> recommendations
     , List<Review> reviews
     , String serviceAddress) {
-    
+
     int productId = product.getProductId();
     String name = product.getName();
     int weight = product.getWeight();
