@@ -7,6 +7,7 @@ import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 import se.magnus.util.http.HttpErrorInfo;
 
@@ -27,6 +28,11 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
       eInfo = new HttpErrorInfo(HttpStatus.UNPROCESSABLE_ENTITY, request.uri().getPath(), e.getMessage());
     else
       eInfo = new HttpErrorInfo(HttpStatus.BAD_REQUEST, request.uri().getPath(), e.getMessage());
+
+    if(e instanceof ResponseStatusException) {
+      ResponseStatusException ex = (ResponseStatusException)e;
+      eInfo = new HttpErrorInfo(ex.getStatus(), request.uri().getPath(), ex.getReason());
+    }
 
     retMap.put("status", eInfo.getHttpStatus());
     retMap.put("message", eInfo.getMessage());

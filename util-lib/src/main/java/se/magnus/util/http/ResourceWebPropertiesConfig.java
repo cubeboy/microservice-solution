@@ -1,4 +1,4 @@
-package se.magnus.microservices.core.product;
+package se.magnus.util.http;
 
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.context.annotation.Bean;

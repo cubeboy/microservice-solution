@@ -56,10 +56,6 @@ public class RecommendationPersistenceTest {
     StepVerifier.create(repository.findById(newEntity.getId()))
       .expectNextMatches(t -> t.equals(newEntity))
       .verifyComplete();
-
-    StepVerifier.create(repository.count())
-      .expectNextMatches(t -> t.equals(2L))
-      .verifyComplete();
   }
 
   @Test
