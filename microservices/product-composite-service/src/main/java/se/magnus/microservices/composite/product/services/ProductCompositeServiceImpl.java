@@ -70,7 +70,7 @@ public class ProductCompositeServiceImpl implements PorductCompositeService {
 
     List<Recommendation> recommendations = null; //integration.getRecommendations(productId);
 
-    List<Review> reviews = integration.getReviews(productId);
+    List<Review> reviews = null;//integration.getReviews(productId);
 
     log.debug("getCompositeProduct: aggregate entity found for productId: {}", productId);
 

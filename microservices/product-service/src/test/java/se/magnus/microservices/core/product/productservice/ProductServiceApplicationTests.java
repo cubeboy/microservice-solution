@@ -88,7 +88,6 @@ class ProductServiceApplicationTests {
       .jsonPath("$.message").isEqualTo("No product found for productId: " + productIdNotFound);
 	}
 
-
 	@Test
 	public void getProductInvalidParameterNegativeValue() {
 

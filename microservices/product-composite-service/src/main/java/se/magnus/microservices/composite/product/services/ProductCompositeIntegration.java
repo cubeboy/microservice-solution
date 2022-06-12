@@ -62,7 +62,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
 
   @Override
-  public List<Review> getReviews(int productId) {
+  public Flux<Review> getReviews(int productId) {
     try {
       String url = reviewServiceUrl + productId;
 
@@ -70,11 +70,13 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
       List<Review> reviews = restTemplate.exchange(url, GET, null, new ParameterizedTypeReference<List<Review>>() {}).getBody();
 
       log.debug("Found {} reviews for a product with id: {}", reviews.size(), productId);
-      return reviews;
+      //return reviews;
+      return null;
 
   } catch (Exception ex) {
       log.warn("Got an exception while requesting reviews, return zero reviews: {}", ex.getMessage());
-      return new ArrayList<>();
+      //return new ArrayList<>();
+      return null;
   }
   }
 
@@ -185,7 +187,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   }
 
   @Override
-  public Review createReview(Review body) {
+  public Mono<Review> createReview(Review body) {
     try {
       String url = reviewServiceUrl;
       log.debug("Will post a new review to URL: {}", url);
@@ -193,7 +195,8 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
       Review review = restTemplate.postForObject(url, body, Review.class);
       log.debug("Created a review with id: {}", review.getProductId());
 
-      return review;
+      //return review;
+      return null;
     } catch (HttpClientErrorException ex) {
       throw handleHttpClientException(ex);
     }

@@ -63,9 +63,9 @@ public class ReviewServiceApplicationTests {
 		assertEquals(1, repository.findByProductId(productId).size());
 
 		deleteAndVerifyReviewsByProductId(productId, OK);
-		assertEquals(0, repository.findByProductId(productId).size());
-
-		deleteAndVerifyReviewsByProductId(productId, OK);
+    assertEquals(0, repository.findByProductId(productId).size());
+    getAndVerifyReviewsByProductId(productId, OK)
+			.jsonPath("$.length()").isEqualTo(0);
 	}
 
 	@Test
@@ -100,7 +100,7 @@ public class ReviewServiceApplicationTests {
 			.jsonPath("$.path").isEqualTo("/review")
 			.jsonPath("$.message").isEqualTo("Invalid productId: " + productIdInvalid);
 	}
-	
+
 	private WebTestClient.BodyContentSpec getAndVerifyReviewsByProductId(int productId, HttpStatus expectedStatus) {
 		return getAndVerifyReviewsByProductId("?productId=" + productId, expectedStatus);
 	}
