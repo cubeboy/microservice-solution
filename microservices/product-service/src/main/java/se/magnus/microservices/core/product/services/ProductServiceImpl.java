@@ -2,7 +2,6 @@ package se.magnus.microservices.core.product.services;
 
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.config.EnableWebFlux;
-import org.springframework.web.reactive.function.server.ServerResponse;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
