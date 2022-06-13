@@ -2,19 +2,21 @@ package se.magnus.api.composite.product;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
+@Setter
 @Getter
 @AllArgsConstructor
 public class ServiceAddresses {
-  private final String cmp;
-  private final String pro;
-  private final String rev;
-  private final String rec;
+  private String compositeProduct;
+  private String product;
+  private String recommendation;
+  private String review;
 
   public ServiceAddresses() {
-    cmp = null;
-    pro = null;
-    rev = null;
-    rec = null;
+    compositeProduct = null;
+    product = null;
+    recommendation = null;
+    review = null;
   }
 }

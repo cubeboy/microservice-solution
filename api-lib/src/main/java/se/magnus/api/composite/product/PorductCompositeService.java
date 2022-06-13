@@ -37,7 +37,7 @@ public interface PorductCompositeService {
     value="product-composite/{productId}",
     produces="application/json"
   )
-  ProductAggregate getProduct(@PathVariable int productId);
+  ProductAggregate getCompositeProduct(@PathVariable int productId);
 
   @ApiOperation(
     value = "${api.product-composite.delete-composite-product.description}",

@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import se.magnus.api.composite.product.PorductCompositeService;
 import se.magnus.api.composite.product.ProductAggregate;
 import se.magnus.api.composite.product.RecommendationSummary;
@@ -15,7 +17,6 @@ import se.magnus.api.composite.product.ServiceAddresses;
 import se.magnus.api.core.product.Product;
 import se.magnus.api.core.recommendation.Recommendation;
 import se.magnus.api.core.review.Review;
-import se.magnus.util.exceptions.NotFoundException;
 import se.magnus.util.http.ServiceUtil;
 
 @Slf4j
@@ -61,20 +62,44 @@ public class ProductCompositeServiceImpl implements PorductCompositeService {
   }
 
   @Override
-  public ProductAggregate getProduct(int productId) {
-    log.debug("getCompositeProduct: lookup a product aggregate for productId: {}", productId);
+  public ProductAggregate getCompositeProduct(int productId) {
+    Mono<Product> product = integration.getProduct(productId);
+    Flux<Recommendation> recommendations = integration.getRecommendations(productId);
+    Flux<Review> reviews = integration.getReviews(productId);
 
-    // TODO: must be fix
-    Product product = null;// integration.getProduct(productId);
-    if (product == null) throw new NotFoundException("No product found for productId: " + productId);
+    ProductAggregate aggregate = new ProductAggregate();
+    ServiceAddresses addresses = new ServiceAddresses();
+    addresses.setCompositeProduct(serviceUtil.getServiceAddress());
 
-    List<Recommendation> recommendations = null; //integration.getRecommendations(productId);
+    product.doOnNext(p -> {
+      aggregate.setProductId(p.getProductId());
+      aggregate.setName(p.getName());
+      aggregate.setWeight(p.getWeight());
+      addresses.setProduct(p.getServiceAddress());
+    }).subscribe();
 
-    List<Review> reviews = null;//integration.getReviews(productId);
+    recommendations.doOnNext(r -> {
+      RecommendationSummary summary = RecommendationSummary.builder()
+        .recommendationId(r.getRecommendationId())
+        .author(r.getAuthor())
+        .rate(r.getRate())
+        .content(r.getContent()).build();
+      aggregate.getRecommendations().add(summary);
+      addresses.setRecommendation(r.getServiceAddress());
+    }).subscribe();
 
-    log.debug("getCompositeProduct: aggregate entity found for productId: {}", productId);
+    reviews.doOnNext(rev -> {
+      ReviewSummary summary = ReviewSummary.builder()
+        .reviewId(rev.getReviewId())
+        .author(rev.getAuthor())
+        .subject(rev.getSubject())
+        .content(rev.getContent()).build();
+      aggregate.getReviews().add(summary);
+      addresses.setReview(rev.getServiceAddress());
+    }).subscribe();
 
-    return createProductAggregate(product, recommendations, reviews, serviceUtil.getServiceAddress());
+    aggregate.setServiceAddresses(addresses);
+    return aggregate;
   }
 
   @Override
@@ -89,42 +114,4 @@ public class ProductCompositeServiceImpl implements PorductCompositeService {
 
     log.debug("getCompositeProduct: aggregate entities deleted for productId: {}", productId);
   }
-
-
-  private ProductAggregate createProductAggregate(
-      Product product
-    , List<Recommendation> recommendations
-    , List<Review> reviews
-    , String serviceAddress) {
-
-    int productId = product.getProductId();
-    String name = product.getName();
-    int weight = product.getWeight();
-
-    List<RecommendationSummary> recommendationSummaries = (recommendations == null) ? null :
-      recommendations.stream()
-        .map(r -> RecommendationSummary.builder()
-          .recommendationId(r.getRecommendationId())
-          .author(r.getAuthor())
-          .rate(r.getRate())
-          .content(r.getContent()).build())
-        .collect(Collectors.toList());
-    List<ReviewSummary> reviewSummaries = (reviews == null) ? null :
-      reviews.stream()
-        .map(r -> ReviewSummary.builder()
-          .reviewId(r.getReviewId())
-          .author(r.getAuthor())
-          .subject(r.getSubject())
-          .content(r.getContent()).build())
-        .collect(Collectors.toList());
-
-    String productAddress = product.getServiceAddress();
-    String reviewAddress = (reviews != null && reviews.size() > 0) ? reviews.get(0).getServiceAddress() : "";
-    String recommendationAddress = (recommendations != null & recommendations.size() > 0) ? recommendations.get(0).getServiceAddress() : "";
-    ServiceAddresses serviceAddresses = new ServiceAddresses(serviceAddress, productAddress, reviewAddress, recommendationAddress);
-
-    return new ProductAggregate(productId, name, weight, recommendationSummaries, reviewSummaries, serviceAddresses);
-  }
-
-
 }
